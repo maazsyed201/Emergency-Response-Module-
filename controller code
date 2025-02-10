@@ -1,0 +1,144 @@
+
+
+// you can enable debug logging to Serial at 115200
+//#define REMOTEXY__DEBUGLOG    
+
+// RemoteXY select connection mode and include library 
+#define REMOTEXY_MODE__ESP8266_HARDSERIAL_POINT
+
+
+// RemoteXY connection settings 
+#define REMOTEXY_SERIAL Serial
+#define REMOTEXY_SERIAL_SPEED 115200
+#define REMOTEXY_WIFI_SSID "maaz"
+#define REMOTEXY_WIFI_PASSWORD "maazsyed1234"
+#define REMOTEXY_SERVER_PORT 6377
+#define REMOTEXY_ACCESS_PASSWORD "maazsyed1234"
+
+#include <Servo.h>
+#include <AFMotor.h>
+
+#define motor 10
+#define Speed 170
+
+char value;
+Servo servo;
+AF_DCMotor M1(1);
+AF_DCMotor M2(2);
+AF_DCMotor M3(3);
+AF_DCMotor M4(4);
+
+
+
+
+
+#include <RemoteXY.h>
+
+// RemoteXY GUI configuration  
+#pragma pack(push, 1)  
+uint8_t RemoteXY_CONF[] =   // 34 bytes
+  { 255,2,0,0,0,27,0,17,0,0,0,198,2,106,200,200,84,1,1,1,
+  0,5,17,60,72,72,70,9,63,63,54,2,26,16 };
+  
+// this structure defines all the variables and events of your control interface 
+struct {
+
+    // input variables
+  int8_t joystick_01_x; // from -100 to 100
+  int8_t joystick_01_y; // from -100 to 100
+
+    // other variable
+  uint8_t connect_flag;  // =1 if wire connected, else =0
+
+} RemoteXY;   
+#pragma pack(pop)
+ 
+/////////////////////////////////////////////
+//           END RemoteXY include          //
+/////////////////////////////////////////////
+
+
+
+void setup() 
+{
+  RemoteXY_Init (); 
+  Serial.begin(9600);
+  servo.attach(motor);
+
+  M1.setSpeed(Speed);
+  M2.setSpeed(Speed);
+  M3.setSpeed(Speed);
+  M4.setSpeed(Speed);
+
+  
+  
+  // TODO you setup code
+  
+}
+
+void loop() 
+{ 
+  RemoteXY_Handler ();
+   Bluetoothcontrol();
+
+  
+  // TODO you loop code
+  // use the RemoteXY structure for data transfer
+  // do not call delay(), use instead RemoteXY_delay() 
+
+
+}
+
+void Bluetoothcontrol() {
+  if (Serial.available() > 0) {
+    value = Serial.read();
+    Serial.println(value);
+  }
+  if (value == 'F') {
+    forward();
+  } else if (value == 'B') {
+    backward();
+  } else if (value == 'L') {
+    left();
+  } else if (value == 'R') {
+    right();
+  } else if (value == 'S') {
+    Stop();
+  }
+}
+
+void forward() {
+  M1.run(FORWARD);
+  M2.run(FORWARD);
+  M3.run(FORWARD);
+  M4.run(FORWARD);
+}
+
+void backward() {
+  M1.run(BACKWARD);
+  M2.run(BACKWARD);
+  M3.run(BACKWARD);
+  M4.run(BACKWARD);
+}
+
+void right() {
+  M1.run(BACKWARD);
+  M2.run(BACKWARD);
+  M3.run(FORWARD);
+  M4.run(FORWARD);
+}
+
+void left() {
+  M1.run(FORWARD);
+  M2.run(FORWARD);
+  M3.run(BACKWARD);
+  M4.run(BACKWARD);
+}
+
+void Stop() {
+  M1.run(RELEASE);
+  M2.run(RELEASE);
+  M3.run(RELEASE);
+  M4.run(RELEASE);
+}
+
